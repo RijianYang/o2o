@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd">
+	
+	<!-- 引入数据库配置文件 -->
+	<bean class="com.ahead.config.EncryptPropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:properties/db.properties</value>
+				<value>classpath:properties/redis.properties</value>
+			</list>
+		</property>
+		<property name="fileEncoding" value="UTF-8"/>
+	</bean>
+
+	<!-- 配置C3P0连接池 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${jdbc.driverClass}"/>
+		<property name="jdbcUrl" value="${jdbc.jdbcUrl}"/>
+		<property name="user" value="${jdbc.user}"/>
+		<property name="password" value="${jdbc.password}"/>
+		<!-- 连接池中保留的最大连接数。Default: 15 -->
+		<property name="maxPoolSize" value="30"/>
+		<!-- 连接池中保留的最小连接数 -->
+		<property name="minPoolSize" value="10"/>
+	</bean>
+	
+	<!-- 将SqlSessionFactoryBean交给IOC容器 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="configLocation" value="classpath:mybatis-config.xml"/>
+		<property name="dataSource" ref="dataSource"/>
+		<!-- 配置SQL Mapper映射文件 -->
+		<property name="mapperLocations" value="classpath:mapper/*.xml"/>
+	</bean>
+	
+	<!-- 扫描Mapper将其交给IOC容器 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.ahead.mapper"/>
+		<!-- 新版本中不需要引入SqlSessionFactory去容器中创建动态代理对象，SqlSessionFactory已经在上面配置到IOC容器中了
+			为了看的明白，这里还是配置下  
+			注意：一定得用value而不是ref
+		 -->
+		 <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+	</bean>
+</beans>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>兑换奖品映射详情</title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet"
+          href="//g.alicdn.com/msui/sm/0.6.2/css/sm.min.css">
+    <link rel="stylesheet"
+          href="//g.alicdn.com/msui/sm/0.6.2/css/sm-extend.min.css">
+    <link rel="stylesheet"
+          href="/o2o/resource/css/frontend/frontendshop.css">
+</head>
+<body>
+<div class="page-group">
+    <div class="page">
+        <header class="bar bar-nav">
+            <a class="button button-link button-nav pull-left" external
+               data-transition='slide-out' id="return"> <span
+                    class="icon icon-left"></span> 返回
+            </a>
+            <h1 class="title" id="award-name"></h1>
+
+        </header>
+
+        <nav class="bar bar-tab">
+            <a class="tab-item" href="/o2o" external> <span
+                    class="icon icon-home"></span> <span class="tab-label">首页</span>
+            </a> <a class="tab-item" href="#" id="me"> <span
+                class="icon icon-me"></span> <span class="tab-label">我</span>
+        </a>
+        </nav>
+
+        <div class="content infinite-scroll infinite-scroll-bottom"
+             data-distance="100">
+
+
+            <div class="card demo-card-header-pic">
+                <div valign="bottom" class="card-header color-white no-border no-padding">
+                    <img class='card-cover' id="award-img" src="" alt="">
+                </div>
+                <div class="card-content">
+                    <div class="card-content-inner">
+                        <p class="color-gray" id="user-award-map-create-time"></p>
+                    </div>
+                </div>
+                <div class="card-footer" id="award-desc">
+                </div>
+            </div>
+
+
+            <div class="card facebook-card">
+                <span style="font-size: 32px">出示二维码给店员扫码获取奖品</span>
+                <div class="card-content"><img width="100%" id="qrCode"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- 侧边栏-->
+<div class="panel-overlay"></div>
+<div class="panel panel-right panel-reveal" id="panel-js-demo">
+
+</div>
+</div></div></div></div>
+</div>
+<script type='text/javascript'
+        src='//g.alicdn.com/sj/lib/zepto/zepto.min.js' charset='utf-8'></script>
+<script type='text/javascript'
+        src='//g.alicdn.com/msui/sm/0.6.2/js/sm.min.js' charset='utf-8'></script>
+<script type='text/javascript'
+        src='//g.alicdn.com/msui/sm/0.6.2/js/sm-extend.min.js' charset='utf-8'></script>
+<script type="text/javascript" src="/o2o/resource/js/loginfrontend/userawardmapdetail.js" charset="UTF-8"></script>
+<script type="text/javascript" src="/o2o/resource/js/common/common.js" charset="UTF-8"></script>
+</body>
+</html>

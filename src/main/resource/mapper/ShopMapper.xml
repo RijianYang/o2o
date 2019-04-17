@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ahead.mapper.ShopMapper">
+    <!--<insert id="insertShop" useGeneratedKeys="true" keyColumn="shop_id"
+            keyProperty="shopId">
+        insert into
+        tb_shop(owner_id, area_id, shop_category_id, shop_name, shop_desc, shop_addr,
+              phone, shop_img, priority, create_time, last_edit_time, enable_status, advice)
+        values(#{owner.userId},#{area.areaId},#{shopCategory.shopCategoryId},
+               #{shopName},#{shopDesc},#{shopAddr},#{phone},#{shopImg},#{priority},
+               #{createTime},#{lastEditTime},#{enableStatus},#{advice})
+    </insert>-->
+
+    <sql id="shop_select">
+        select
+            s.shop_id,s.shop_name,s.shop_desc,s.shop_addr,s.phone,
+            s.shop_img,s.priority,s.create_time,s.last_edit_time,
+            s.enable_status,s.advice,
+            a.area_id,a.area_name,
+            sc.shop_category_id,sc.shop_category_name,
+            owner.user_id, owner.name
+    </sql>
+    <sql id="shop_from">
+        from
+            tb_shop s,tb_area a,tb_shop_category sc, tb_user owner
+    </sql>
+
+    <!-- 分页查询，可输入的条件有：店铺名(模糊)，店铺状态，二级店铺类别，区域Id，owner。 -->
+    <!-- ERROR:这里把owner(User)也当作了查询条件但是并没有查询tb_user的信息 -->
+    <sql id="getShopList_where">
+
+        <!--如果店铺名称不为空
+        就拼装一个根据店铺名称模糊查询
+        -->
+        <if test="shopWhere.shopName != null">
+            and s.shop_name like '%${shopWhere.shopName}%'
+        </if>
+        <!--如果状态值不为空添加一个根据状态值查询的条件 -->
+        <if test="shopWhere.enableStatus != null">
+            and s.enable_status = #{shopWhere.enableStatus}
+        </if>
+        <!--如果Shop条件对象中的ShopCategory不为空和其id不为空
+        该店铺类别(二级类别)下面有多少个店铺 查询出来
+        -->
+        <if test="shopWhere.shopCategory != null and shopWhere.shopCategory.shopCategoryId != null">
+            and s.shop_category_id = #{shopWhere.shopCategory.shopCategoryId}
+        </if>
+        <!--如果Shop条件中的区域不为空
+        查询出该区域中有多少个店铺
+        -->
+        <if test="shopWhere.area != null and shopWhere.area.areaId != null">
+            and s.area_id = #{shopWhere.area.areaId}
+        </if>
+        <!--如果Shop条件中的用户不为空，
+        查询出该用户下有多少个店铺
+        -->
+        <if test="shopWhere.owner != null and shopWhere.owner.userId != null">
+            and s.owner_id = #{shopWhere.owner.userId}
+        </if>
+        <!--如果Shop条件中的ShopCategory不为空和其parent不为空和parent.shopCategoryId不为空
+        子查询(先查询出该一级类别下有多少个二级类别，然后把二级类别的主键当作条件，再查询出该二级类别下有多少个店铺)
+        -->
+        <if test="shopWhere.shopCategory != null and shopWhere.shopCategory.parent != null and shopWhere.shopCategory.parent.shopCategoryId != null">
+
+            and s.shop_category_id
+            IN ( SELECT sc.shop_category_id FROM tb_shop_category sc WHERE sc.parent_id =
+            #{shopWhere.shopCategory.parent.shopCategoryId} )
+        </if>
+        and
+          s.area_id = a.area_id
+        and
+          s.shop_category_id = sc.shop_category_id
+        and
+          s.owner_id = owner.user_id
+    </sql>
+
+    <insert id="insertShop">
+        <selectKey keyProperty="shopId" order="AFTER" resultType="Long">
+            select last_insert_id();
+        </selectKey>
+        insert into
+        tb_shop(owner_id, area_id, shop_category_id, shop_name, shop_desc, shop_addr,
+        phone, shop_img, priority, create_time, last_edit_time, enable_status, advice)
+        values(#{owner.userId},#{area.areaId},#{shopCategory.shopCategoryId},
+        #{shopName},#{shopDesc},#{shopAddr},#{phone},#{shopImg},#{priority},
+        #{createTime},#{lastEditTime},#{enableStatus},#{advice})
+    </insert>
+
+    <!-- 修改店铺 -->
+    <update id="updateShop">
+        update tb_shop
+        <!-- <where>标签去除前面的and ，<set>标签去除后面的逗号 -->
+        <trim prefix="set" prefixOverrides=",">
+            <if test="owner != null">owner_id = #{owner.userId}</if>
+            <if test="area != null">,area_id = #{area.areaId}</if>
+            <if test="shopCategory != null">,shop_category_id = #{shopCategory.shopCategoryId}</if>
+            <if test="shopName != null">,shop_name = #{shopName}</if>
+            <if test="shopDesc != null">,shop_desc = #{shopDesc}</if>
+            <if test="shopAddr != null">,shop_addr = #{shopAddr}</if>
+            <if test="phone != null">,phone = #{phone}</if>
+            <if test="shopImg != null">,shop_img = #{shopImg}</if>
+            <if test="priority != null">,priority = #{priority}</if>
+            <if test="enableStatus != null">,enable_status = #{enableStatus}</if>
+            <if test="advice != null">,advice = #{advice}</if>
+            <if test="lastEditTime != null">,last_edit_time = #{lastEditTime}</if>
+        </trim>
+        where shop_id = ${shopId}
+    </update>
+    <resultMap id="shopMap" type="Shop">
+        <id property="shopId" column="shop_id"/>
+        <result property="shopName" column="shop_name"/>
+        <result property="shopDesc" column="shop_desc"/>
+        <result property="shopAddr" column="shop_addr"/>
+        <result property="phone" column="phone"/>
+        <result property="shopImg" column="shop_img"/>
+        <result property="priority" column="priority"/>
+        <result property="createTime" column="create_time"/>
+        <result property="lastEditTime" column="last_edit_time"/>
+        <result property="enableStatus" column="enable_status"/>
+        <result property="advice" column="advice"/>
+        <association property="area" javaType="Area">
+            <id property="areaId" column="area_id"/>
+            <result property="areaName" column="area_name"/>
+        </association>
+        <association property="shopCategory" column="shop_category_id"
+                     javaType="ShopCategory">
+            <id property="shopCategoryId" column="shop_category_id"/>
+            <result property="shopCategoryName" column="shop_category_name"/>
+        </association>
+        <association property="owner" javaType="User">
+            <id property="userId" column="user_id"/>
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+    <!-- 根据id查询店铺 -->
+    <select id="selectShopById" resultMap="shopMap" parameterType="Long">
+        <include refid="shop_select"/>
+
+        <include refid="shop_from"/>
+
+        where
+          s.area_id = a.area_id
+        and
+          s.shop_category_id = sc.shop_category_id
+        and
+          s.owner_id = owner.user_id
+        and
+        s.shop_id = #{shopId}
+    </select>
+
+    <!-- 根据条件分页查询店铺集合 -->
+    <select id="selectShopList" resultMap="shopMap">
+        <include refid="shop_select"/>
+        <include refid="shop_from"/>
+
+        <where>
+            <include refid="getShopList_where"/>
+        </where>
+        <!--按权重降序，如果权重一样就按主键升序 -->
+        order by s.priority desc, s.shop_id asc
+    </select>
+
+</mapper>

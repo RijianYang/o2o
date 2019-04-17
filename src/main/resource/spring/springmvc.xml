@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd">
+
+	<!-- 设置访问ip映射到前端主页上 -->
+	<mvc:view-controller path="/" view-name="frontend/index"/>
+	<mvc:view-controller path="/shopManager" view-name="shop/shoplist"/>
+	<mvc:view-controller path="/superAdmin" view-name="superadmin/superadminmanage"/>
+
+
+
+	<context:property-placeholder location="classpath:properties/wechat.properties"/>
+
+	<!-- 1、 扫描注解 -->
+	<context:component-scan base-package="com.ahead.web"/>
+	<context:component-scan base-package="com.ahead.util"/>
+	<!-- 2、配置注解驱动(主要作用还是实例化注解处理器映射器和注解处理器适配器) -->
+	<mvc:annotation-driven/>
+	
+	<!-- 3、配置视图解析器 -->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/html/"/>
+		<property name="suffix" value=".html"/>
+	</bean>
+	
+	<!-- 4、处理静态资源 -->
+	<mvc:default-servlet-handler/>
+
+	<!-- 配置文件上传解析器  beanName是固定的-->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- 设置文件上传最大尺寸为1M -->
+		<property name="maxUploadSize" value="1048576"/>
+	</bean>
+
+	<!-- 5、配置店铺管理员拦截器 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**"/>
+
+			<mvc:exclude-mapping path="/shopAuthMap/addShopAuthMap"/>
+			<mvc:exclude-mapping path="/localAuth/login"/>
+			<mvc:exclude-mapping path="/localAuth/loginPage"/>
+			<mvc:exclude-mapping path="/localAuth/exitSystem"/>
+			<mvc:exclude-mapping path="/localAuth/bindWechatAuth"/>
+			<mvc:exclude-mapping path="/localAuth/bindWechatAuthPage"/>
+			<mvc:exclude-mapping path="/shop/generateQRCodeForShopAuth"/>
+			<mvc:exclude-mapping path="/WEB-INF/**"/>
+			<mvc:exclude-mapping path="/frontEnd/**"/>
+			<mvc:exclude-mapping path="/resource/**"/>
+			<mvc:exclude-mapping path="/"/>
+			<mvc:exclude-mapping path="/wechatLogin/loginCheck"/>
+			<mvc:exclude-mapping path="/loginFrontEnd/**"/>
+			<mvc:exclude-mapping path="/superAdmin/**"/>
+            <mvc:exclude-mapping path="/wechat"/>
+			<bean class="com.ahead.web.interceptor.ShopInterceptor"/>
+		</mvc:interceptor>
+
+		<mvc:interceptor>
+			<mvc:mapping path="/loginFrontEnd/**"/>
+			<mvc:exclude-mapping path="/loginFrontEnd/saleProduct"/>
+			<mvc:exclude-mapping path="/loginFrontEnd/getAward"/>
+			<bean class="com.ahead.web.interceptor.FrontEndInterceptor"/>
+		</mvc:interceptor>
+
+		<mvc:interceptor>
+			<mvc:mapping path="/superAdmin/**"/>
+			<mvc:exclude-mapping path="/superAdmin/loginPage"/>
+			<mvc:exclude-mapping path="/superAdmin/login"/>
+			<mvc:exclude-mapping path="/superAdmin/modifyPassword"/>
+			<bean class="com.ahead.web.interceptor.SuperAdminInterceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+</beans>

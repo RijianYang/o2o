@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <!-- 注册JobDetail工厂Bean以获取JobDetail对象（任务的定义） -->
+    <bean id="detailFactoryBean" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <!-- 设置JobDetail的name（唯一标识） -->
+        <property name="name" value="productSellDailyJob"/>
+        <!-- 设置JobDetail的group（组：相当于分类） -->
+        <property name="group" value="productSellDailyGroup"/>
+        <!-- 对于相同的JobDetail，当指定多个Trigger时，很可能第一个Job完成之前
+         第二个Job就开始了，指定concurrent设为false，多个Job不会并发运行，第二Job将不会
+         在第一个Job完成之前开始-->
+        <property name="concurrent" value="false"/>
+        <!-- 指定运行任务的类 -->
+        <property name="targetObject">
+            <bean class="com.ahead.service.impl.ProductSellDailyServiceImpl"/>
+        </property>
+        <!-- 指定运行任务的方法 -->
+        <property name="targetMethod" value="dailyCalculate"/>
+    </bean>
+
+    <!-- 注册Trigger工厂Bean以获取trigger对象（触发的条件） -->
+    <bean id="triggerFactoryBean" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <!-- 设置Trigger的name -->
+        <property name="name" value="productSellDailyTrigger"/>
+        <!-- 设置Trigger的group -->
+        <property name="group" value="productSellDailyGroup"/>
+        <!-- 绑定JobDetail -->
+        <property name="jobDetail" ref="detailFactoryBean"/>
+        <!-- 设定cron表达式 (每天的凌晨执行)-->
+        <property name="cronExpression" value="0 0/2 * * * ? "/>
+    </bean>
+
+    <!-- 注册调度工厂 -->
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <!-- 设置触发的条件 -->
+        <property name="triggers" ref="triggerFactoryBean"/>
+    </bean>
+</beans>

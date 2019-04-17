@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+			"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ahead.mapper.ShopAuthMapMapper">
+
+	<resultMap id="shopAuthMapMap" type="ShopAuthMap">
+		<id column="shop_auth_map_Id" property="shopAuthMapId"/>
+		<result column="title" property="title"/>
+		<result column="title_flag" property="titleFlag"/>
+		<result column="create_time" property="createTime"/>
+		<result column="last_edit_time" property="lastEditTime"/>
+		<result column="enable_status" property="enableStatus"/>
+		<association property="employee" javaType="User">
+			<id column="user_id" property="userId"/>
+			<result column="name" property="name"/>
+		</association>
+		<association property="shop" javaType="Shop">
+			<id column="shop_id" property="shopId"/>
+			<result column="shop_name" property="shopName"/>
+		</association>
+	</resultMap>
+
+	<sql id="shopAuthMapColumn">
+		sam.shop_auth_map_Id, sam.title, sam.title_flag, sam.create_time, sam.last_edit_time, sam.enable_status,
+		emp.user_id, emp.name,
+		s.shop_id, s.shop_name
+	</sql>
+
+	<select id="selectShopAuthMapListByShopId" resultMap="shopAuthMapMap">
+		SELECT
+			<include refid="shopAuthMapColumn"/>
+		FROM
+			tb_shop_auth_map sam, tb_user emp, tb_shop s
+		WHERE
+			sam.shop_id = s.shop_id
+		AND
+			sam.employee_id = emp.user_id
+		AND
+			sam.shop_id = #{shopId}
+	</select>
+
+	<insert id="insertShopAuthMap" useGeneratedKeys="true" keyProperty="shopAuthMapId">
+		INSERT INTO
+			tb_shop_auth_map(employee_id, shop_id, title, title_flag, create_time, last_edit_time, enable_status)
+		VALUES
+			(#{employee.userId}, #{shop.shopId}, #{title}, #{titleFlag}, #{createTime}, #{lastEditTime}, #{enableStatus})
+	</insert>
+
+	<update id="updateShopAuthMapById">
+		UPDATE
+			tb_shop_auth_map
+		<set>
+			<if test="title != null">
+				title = #{title},
+			</if>
+			<if test="titleFlag != null">
+				title_flag = #{titleFlag},
+			</if>
+			<if test="enableStatus != null">
+				enable_status = #{enableStatus},
+			</if>
+			<if test="lastEditTime != null">
+				last_edit_time = #{lastEditTime}
+			</if>
+		</set>
+		WHERE
+			shop_auth_map_id = #{shopAuthMapId}
+	</update>
+
+	<delete id="deleteShopAuthMap">
+		DELETE
+		FROM
+			tb_shop_auth_map
+		WHERE
+			shop_auth_map_id = #{shopAuthMapId}
+	</delete>
+
+	<select id="selectShopAuthMapById" resultMap="shopAuthMapMap">
+		SELECT
+			<include refid="shopAuthMapColumn"/>
+		FROM
+			tb_shop_auth_map sam, tb_user emp, tb_shop s
+		<where>
+			sam.shop_id = s.shop_id
+		AND
+			sam.employee_id = emp.user_id
+
+			<if test="shopAuthMap.shopAuthMapId != null">
+				AND sam.shop_auth_map_id = #{shopAuthMap.shopAuthMapId}
+			</if>
+			<if test="shopAuthMap.employee != null and shopAuthMap.employee.userId != null">
+				AND sam.employee_id = #{shopAuthMap.employee.userId}
+			</if>
+			<if test="shopAuthMap.shop != null and shopAuthMap.shop.shopId != null">
+				AND sam.shop_id = #{shopAuthMap.shop.shopId}
+			</if>
+		</where>
+	</select>
+</mapper>

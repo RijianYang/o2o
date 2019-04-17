@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>店铺列表</title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" href="//g.alicdn.com/msui/sm/0.6.2/css/sm.min.css">
+    <link rel="stylesheet" href="//g.alicdn.com/msui/sm/0.6.2/css/sm-extend.min.css">
+    <link rel="stylesheet" href="/o2o/resource/css/common/list.css">
+</head>
+<body>
+<header class="bar bar-nav">
+    <h1 class="title">店铺列表</h1>
+</header>
+<div class="content">
+    <div class="content-block">
+        <div class="searchbar row">
+            <div class="search-input col-80">
+                <label class="icon icon-search" for="search"></label>
+                <input type="search" id='search' placeholder='输入店铺名称'/>
+            </div>
+            <a class="button button-fill button-primary col-20" id="search-button">搜索</a>
+        </div>
+        <div class="row">
+            <div class="col-40"><span id="user-name"></span></div>
+            <div class="col-40">&nbsp;</div>
+            <div class="col-20"><a href="/o2o/shop/shopOperationPage">添加</a></div>
+        </div>
+        <div class="row row-shop">
+            <div class="col-40">店铺名称</div>
+            <div class="col-40">状态</div>
+            <div class="col-20">操作</div>
+        </div>
+        <span id="shop-list">
+
+
+        </span>
+
+    </div>
+
+    <!-- 分页逻辑 -->
+    <div class="content-block" id="dump-page">
+        <div class="row ">
+            <div class="col-20">
+                <a href="javascript:void(0)" ><span id="pre-page">上一页</span></a>
+            </div>
+            <div class="col-20" style="align-content: center">
+                <span id="current-page"></span>
+            </div>
+            <div class="col-20">
+                <a href="javascript:void(0)" ><span id="next-page">下一页</span></a>
+            </div>
+        </div>
+
+        <div class="searchbar row">
+            <div class="search-input col-85">
+                <input type="search" placeholder='输入跳转的页数' id="dump-page-input"/>
+            </div>
+            <a class="button button-fill button-primary col-15" id="dump-page-button"><span class="icon icon-search"></span></a>
+        </div>
+    </div>
+    <div class="content-block">
+        <div class="row">
+            <div class="col-33">
+                <a href="/o2o/localAuth/bindWechatAuthPage?userType=2" id="bind-wechat"
+                   class="button button-big button-fill">绑定微信</a>
+            </div>
+            <div class="col-33">
+                <a href="/o2o/localAuth/loginPage?userType=2" id="log-out"
+                   class="button button-big button-fill button-danger">退出系统</a>
+            </div>
+            <div class="col-33">
+                <a href="/o2o/localAuth/modifyPasswordPage?userType=2" class="button button-big button-fill button-success">修改密码</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type='text/javascript' src='//g.alicdn.com/sj/lib/zepto/zepto.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='//g.alicdn.com/msui/sm/0.6.2/js/sm.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='//g.alicdn.com/msui/sm/0.6.2/js/sm-extend.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='/o2o/resource/js/shop/shoplist.js' charset='utf-8'></script>
+<script type='text/javascript'
+        src='/o2o/resource/js/common/common.js' charset='utf-8'></script>
+</body>
+</html>
