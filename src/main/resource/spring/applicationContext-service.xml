@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">
+	
+	<!-- 扫描service包下的所有注解 -->
+	<context:component-scan base-package="com.ahead.service.impl"/>
+	
+	<!-- 事务配置 -->
+	<!-- 1、 配置核心事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<!-- 注入C3P0连接池  底层还是通过Connection来控制事务的 -->
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+	<!-- 2、配置通知  -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<!-- 作用：哪些方法切入以后该怎么办(具体哪个方法该怎么样) -->
+			<tx:method name="save*" isolation="REPEATABLE_READ" propagation="REQUIRED" read-only="false"/>
+			<tx:method name="add*" isolation="REPEATABLE_READ" propagation="REQUIRED" read-only="false"/>
+			<tx:method name="insert*" isolation="REPEATABLE_READ" propagation="REQUIRED" read-only="false"/>
+			<tx:method name="delete*" isolation="REPEATABLE_READ" propagation="REQUIRED" read-only="false"/>
+			<tx:method name="remove*" isolation="REPEATABLE_READ" propagation="REQUIRED" read-only="false"/>
+			<tx:method name="update*" isolation="REPEATABLE_READ" propagation="REQUIRED" read-only="false"/>
+			<tx:method name="modify*" isolation="REPEATABLE_READ" propagation="REQUIRED" read-only="false"/>
+			<tx:method name="get*" isolation="REPEATABLE_READ" propagation="REQUIRED" read-only="false"/>
+			<tx:method name="find*" isolation="REPEATABLE_READ" propagation="REQUIRED" read-only="false"/>
+		</tx:attributes>
+	</tx:advice>
+
+	<!-- 注册AOP捕获异常和打印日志 -->
+	<bean id="aopExceptionAndPrintLog" class="com.ahead.config.AopExceptionAndPrintLog"/>
+
+	<!-- 3、配置AOP事务切入 -->
+	<aop:config>
+		<aop:pointcut expression="execution(* com.ahead.service.impl.*Impl.*(..))" id="pc"/>
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="pc"/>
+
+		<!-- Service抛出异常就调用指定 -->
+		<aop:aspect ref="aopExceptionAndPrintLog">
+			<aop:after-throwing method="handleExceptionAndPrintLog" throwing="ex" pointcut-ref="pc"/>
+		</aop:aspect>
+	</aop:config>
+		
+</beans>

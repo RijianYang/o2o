@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+			"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ahead.mapper.UserShopMapMapper">
+
+	<sql id="userShopMapColumn">
+		usm.user_shop_map_id, usm.create_time, usm.point, usm.last_edit_time,
+		u.user_id, u.name,
+		s.shop_id, s.shop_name, s.shop_img
+	</sql>
+	<resultMap id="userShopMapMap" type="UserShopMap">
+		<id column="user_shop_map_id" property="userShopMapId"/>
+		<result column="create_time" property="createTime"/>
+		<result column="last_edit_time" property="lastEditTime"/>
+		<result column="point" property="point"/>
+		<association property="buyer" javaType="User">
+			<id column="user_id" property="userId"/>
+			<result column="name" property="name"/>
+		</association>
+		<association property="shop" javaType="Shop">
+			<id column="shop_id" property="shopId"/>
+			<result column="shop_name" property="shopName"/>
+			<result column="shop_img" property="shopImg"/>
+		</association>
+	</resultMap>
+
+	<select id="selectUserShopMapListByWhere" resultMap="userShopMapMap">
+		SELECT
+		  	<include refid="userShopMapColumn"/>
+		FROM
+			tb_user_shop_map usm, tb_user u, tb_shop s
+		<where>
+			usm.buyer_id = u.user_id
+		AND
+			usm.shop_id = s.shop_id
+		<!--按顾客信息精确查询-->
+		<if test="buyer != null and buyer.userId != null">
+			AND usm.buyer_id = #{buyer.userId}
+		</if>
+		<!--按店铺信息精确查询-->
+		<if test="shop != null and shop.shopId != null">
+			AND usm.shop_id = #{shop.shopId}
+		</if>
+		<!--按顾客姓名模糊查询-->
+		<if test="buyer != null and buyer.name != null">
+			AND u.name LIKE '%${buyer.name}%'
+		</if>
+		<!--按店铺名称模糊查询-->
+		<if test="shop != null and shop.shopName != null">
+			AND s.shop_name LIKE '%${shop.shopName}%'
+		</if>
+		<!--按创建时间范围查询-->
+		<if test="createTime != null">
+			AND usm.create_time >= #{createTime}
+		</if>
+		</where>
+	</select>
+
+	<select id="selectUserShopMapById" resultMap="userShopMapMap">
+		SELECT
+			<include refid="userShopMapColumn"/>
+		FROM
+			tb_user_shop_map usm, tb_user u, tb_shop s
+		<where>
+				usm.buyer_id = u.user_id
+			AND
+				usm.shop_id = s.shop_id
+			AND
+				usm.buyer_id = #{userId}
+			AND
+				usm.shop_id = #{shopId}
+		</where>
+	</select>
+
+	<insert id="insertUserShopMap" useGeneratedKeys="true" keyProperty="userShopMapId">
+		INSERT INTO
+			tb_user_shop_map(buyer_id, shop_id, create_time, point, last_edit_time)
+		VALUES
+			(#{buyer.userId}, #{shop.shopId}, #{createTime}, #{point}, #{lastEditTime})
+	</insert>
+
+	<update id="updateUserShopMapById">
+		UPDATE
+			tb_user_shop_map
+		SET
+			point = #{point}
+		WHERE
+			buyer_id = #{buyer.userId}
+		AND
+			shop_id = #{shop.shopId}
+	</update>
+</mapper>

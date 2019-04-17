@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+			"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ahead.mapper.UserAwardMapMapper">
+
+	<sql id="userAwardMapColumn">
+		uam.user_award_map_id, uam.create_time, uam.used_status,
+		buyer.user_id buyer_id, buyer.name buyer_name,
+		award.award_id, award.award_name, award.point, award.award_img, award.award_desc,
+		shop.shop_id, shop.shop_name,
+		operator.user_id operator_id, operator.name operator_name
+	</sql>
+	<resultMap id="userAwardMapMap" type="UserAwardMap">
+		<id column="user_award_map_id" property="userAwardMapId"/>
+		<result column="create_time" property="createTime"/>
+		<result column="used_status" property="usedStatus"/>
+		<!--哪个顾客兑换的奖品-->
+		<association property="buyer" javaType="User">
+			<id column="buyer_id" property="userId"/>
+			<result column="buyer_name" property="name"/>
+		</association>
+		<!--兑换哪个奖品-->
+		<association property="award" javaType="Award">
+			<id column="award_id" property="awardId"/>
+			<result column="award_name" property="awardName"/>
+			<result column="point" property="point"/>
+			<result column="award_img" property="awardImg"/>
+			<result column="award_desc" property="awardDesc"/>
+		</association>
+		<!--兑换的奖品属于哪个店铺-->
+		<association property="shop" javaType="Shop">
+			<id column="shop_id" property="shopId"/>
+			<result column="shop_name" property="shopName"/>
+		</association>
+		<!--哪个操作员操作的该奖品兑换-->
+		<association property="operator" javaType="User">
+			<id column="operator_id" property="userId"/>
+			<result column="operator_name" property="name"/>
+		</association>
+	</resultMap>
+
+	<select id="selectUserAwardMapListByWhere" resultMap="userAwardMapMap">
+		SELECT
+			<include refid="userAwardMapColumn"/>
+		FROM
+			tb_user_award_map uam,
+			tb_user buyer,
+			tb_award award,
+			tb_shop shop,
+			tb_user operator
+		<where>
+		AND
+			uam.buyer_id = buyer.user_id
+		AND
+			uam.award_id = award.award_id
+		AND
+			uam.shop_id = shop.shop_id
+		AND
+			uam.operator_id = operator.user_id
+			<!--按顾客信息精确查询-->
+			<if test="buyer != null and buyer.userId != null">
+				AND uam.buyer_id = #{buyer.userId}
+			</if>
+			<!--按某个店铺精确查询-->
+			<if test="shop != null and shop.shopId != null">
+				AND uam.shop_id = #{shop.shopId}
+			</if>
+			<!--按奖品名称模糊查询-->
+			<if test="award != null and award.awardName != null">
+				AND award.award_name LIKE '%${award.awardName}%'
+			</if>
+			<!--按顾客名字模糊查询-->
+			<if test="buyer != null and buyer.name != null">
+				AND buyer.name LIKE '%${buyer.name}%'
+			</if>
+			<!--按奖品状态查询-->
+			<if test="usedStatus != null">
+				AND uam.used_status = #{usedStatus}
+			</if>
+		</where>
+		ORDER BY
+			uam.create_time DESC
+	</select>
+
+	<select id="selectUserAwardMapById" resultMap="userAwardMapMap">
+		SELECT
+			<include refid="userAwardMapColumn"/>
+		FROM
+			tb_user_award_map uam,
+			tb_user buyer,
+			tb_award award,
+			tb_shop shop,
+			tb_user operator
+		WHERE
+			uam.buyer_id = buyer.user_id
+		AND
+			uam.award_id = award.award_id
+		AND
+			uam.shop_id = shop.shop_id
+		AND
+			uam.operator_id = operator.user_id
+		AND
+			uam.user_award_map_id = #{userAwardMapId}
+	</select>
+
+	<insert id="insertUserAwardMap" useGeneratedKeys="true" keyProperty="userAwardMapId">
+		INSERT INTO
+			tb_user_award_map(user_award_map_id, create_time, used_status,
+							  buyer_id, award_id, shop_id, operator_id)
+		VALUES
+			(#{userAwardMapId}, #{createTime}, #{usedStatus},
+			 #{buyer.userId}, #{award.awardId}, #{shop.shopId}, #{operator.userId})
+	</insert>
+
+	<update id="updateUserAwardMapById">
+		UPDATE
+			tb_user_award_map
+		<set>
+			used_status = #{usedStatus},
+			<if test="operator != null and operator.userId != null">
+				operator_id = #{operator.userId},
+			</if>
+		</set>
+		WHERE
+			user_award_map_id = #{userAwardMapId}
+	</update>
+
+</mapper>

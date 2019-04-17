@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+			"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ahead.mapper.ProductSellDailyMapper">
+
+	<resultMap id="productSellDailyMap" type="ProductSellDaily">
+		<id column="product_sell_daily_id" property="productSellDailyId"/>
+		<result column="create_time" property="createTime"/>
+		<result column="total" property="total"/>
+		<!--哪个商品的销量-->
+		<association property="product" javaType="Product">
+			<id column="product_id" property="productId"/>
+			<result column="product_name" property="productName"/>
+		</association>
+		<!--哪个店铺的销量-->
+		<association property="shop" javaType="Shop">
+			<id column="shop_id" property="shopId"/>
+			<result column="shop_name" property="shopName"/>
+		</association>
+	</resultMap>
+	<sql id="productSellDailyColumn">
+		psd.product_sell_daily_id, psd.product_sell_daily_id, psd.create_time, psd.total,
+		p.product_id, p.product_name,
+		s.shop_id, s.shop_name
+	</sql>
+
+	<select id="selectProductSellDailyListByWhere" resultMap="productSellDailyMap">
+		SELECT
+			<include refid="productSellDailyColumn"/>
+		FROM
+			tb_product_sell_daily psd, tb_shop s, tb_product p
+		<where>
+			psd.shop_id = s.shop_id
+		AND
+			psd.product_id = p.product_id
+	    <!--按店铺查询-->
+	    <if test="productSellDailyWhere.shop != null and productSellDailyWhere.shop.shopId != null">
+			AND psd.shop_id = #{productSellDailyWhere.shop.shopId}
+	    </if>
+		<!--按商品名称模糊查询-->
+		<if test="productSellDailyWhere.product != null and productSellDailyWhere.product.productName != null">
+			AND p.product_name LIKE '%${productSellDailyWhere.product.productName}%'
+		</if>
+		<!--按时间查询-->
+		<if test="beginTime != null and endTime != null">
+			AND
+				date_format(psd.create_time, '%Y-%m-%d')
+				BETWEEN
+					date_format(#{beginTime}, '%Y-%m-%d')
+				AND
+					date_format(#{endTime}, '%Y-%m-%d')
+		</if>
+		<if test="beginTime != null and endTime == null">
+			AND date_format(psd.create_time, '%Y-%m-%d') &gt;= date_format(#{beginTime}, '%Y-%m-%d')
+		</if>
+		<if test="beginTime == null and endTime != null">
+			AND date_format(psd.create_time, '%Y-%m-%d') &lt;= date_format(#{endTime}, '%Y-%m-%d')
+		</if>
+		</where>
+		ORDER BY
+			<!-- 按照商品id升序，如果商品id一样再按照时间升序
+			 	这样的话Controller就很好组装Series中的data数据，因为查出来的数据每天都是有销量的（即使销量为0该商品也有一周的记录）
+			 	-->
+			psd.product_id, psd.create_time
+	</select>
+
+	<!-- 查询出前一天的销量根据productId分组然后插入到销量表中 -->
+	<insert id="insertProductSellDaily">
+		INSERT INTO
+			tb_product_sell_daily(create_time, total, product_id, shop_id)
+			(
+			SELECT
+				date_format(create_time, '%Y-%m-%d'), count(product_id) total, product_id, shop_id
+			FROM
+				tb_user_product_map
+			WHERE
+			<!-- 先把create_time格式化精确到天 = 当前时间 - 一天（昨天） -->
+				date_format(create_time, '%Y-%m-%d') = date_sub(curdate(), interval 1 day)
+			GROUP BY
+				product_id
+			)
+	</insert>
+
+	<!-- 1、查出店铺销量统计表中昨天所有的product_id
+	 	 2、用上面的作为条件，在商品表中查出所有不满足上面条件的数据 not in (product_id)
+	 	 3、把查出来的数据插入到店铺销量统计表中
+	 	-->
+	<insert id="insertDefaultProductSellDaily">
+		INSERT INTO
+			tb_product_sell_daily(create_time, total, product_id, shop_id)
+			(
+			SELECT
+				date_sub(curdate(), interval 1 day) create_time, 0, p.product_id, p.shop_id
+			FROM
+				tb_product p
+			WHERE
+				p.product_id not in (
+					SELECT
+						psd.product_id
+					FROM
+						tb_product_sell_daily psd
+					WHERE						date_format(psd.create_time, '%Y-%m-%d') = date_sub(curdate(), interval 1 day)
+
+				)
+			)
+	</insert>
+</mapper>
