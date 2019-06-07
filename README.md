@@ -84,7 +84,7 @@ SUI Mobile中的无限下滑时间，只要下滑屏幕就会分页去后台查�
 
 ![AYAf78.png](https://s2.ax1x.com/2019/03/24/AYAf78.png)
 
-兑换页面：
+领取页面：
 
 ![AYA5tg.png](https://s2.ax1x.com/2019/03/24/AYA5tg.png)
 
